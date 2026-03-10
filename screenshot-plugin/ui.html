@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #333;
+      font-size: 12px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── 탭 바 ── */
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid #e0e0e0;
+      background: #f7f7f7;
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 9px 4px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .tab-btn.active {
+      color: #18A0FB;
+      border-bottom-color: #18A0FB;
+      background: white;
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: #555;
+      background: #f0f0f0;
+    }
+
+    /* ── 설정 패널 ── */
+    .panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .settings-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+    }
+
+    h2 {
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .hint {
+      color: #888;
+      font-size: 11px;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 7px 8px;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: #18A0FB;
+      outline: none;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .radio-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 14px 0 8px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .toggle-label {
+      font-weight: 600;
+    }
+
+    .toggle-desc {
+      color: #888;
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #ccc;
+      border-radius: 20px;
+      transition: 0.3s;
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+
+    input:checked+.slider {
+      background: #18A0FB;
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(16px);
+    }
+
+    .selector-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .selector-row {
+      display: flex;
+      gap: 4px;
+    }
+
+    .selector-row input {
+      flex: 1;
+    }
+
+    .selector-add {
+      background: #f0f0f0;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .selector-del {
+      background: #fee;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 8px;
+      cursor: pointer;
+      color: #c00;
+      font-size: 14px;
+    }
+
+    .file-drop-zone {
+      border: 2px dashed #d0d0d0;
+      border-radius: 6px;
+      padding: 18px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      color: #888;
+      font-size: 12px;
+      position: relative;
+    }
+
+    .file-drop-zone:hover,
+    .file-drop-zone.drag-over {
+      border-color: #18A0FB;
+      background: #f0f8ff;
+      color: #18A0FB;
+    }
+
+    .file-drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .file-name {
+      margin-top: 5px;
+      font-size: 11px;
+      color: #555;
+      word-break: break-all;
+    }
+
+    .settings-footer {
+      padding: 10px 16px;
+      border-top: 1px solid #eee;
+      flex-shrink: 0;
+    }
+
+    #generate-btn {
+      background: #18A0FB;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 600;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+
+    #generate-btn:hover {
+      background: #0D8DEB;
+    }
+
+    #generate-btn:disabled {
+      background: #b3d4ff;
+      cursor: not-allowed;
+    }
+
+    /* ── 미리보기 패널 ── */
+    .preview-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .preview-sidebar {
+      width: 250px;
+      flex-shrink: 0;
+      border-right: 1px solid #e5e5e5;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .sb-section {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      flex-shrink: 0;
+    }
+
+    .sb-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .sb-hint {
+      font-size: 10px;
+      color: #999;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    .shortcut-badge {
+      display: inline-block;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 10px;
+      font-family: monospace;
+      margin-bottom: 8px;
+    }
+
+    #capture-label-input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+
+    #capture-label-input:focus {
+      border-color: #18A0FB;
+      outline: none;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-capture {
+      flex: 1;
+      padding: 7px 4px;
+      background: #18A0FB;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .btn-capture:hover {
+      background: #0D8DEB;
+    }
+
+    .btn-delay {
+      padding: 7px 10px;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+      transition: background 0.2s;
+    }
+
+    .btn-delay:hover {
+      background: #e0e0e0;
+    }
+
+    .countdown {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #18A0FB;
+      padding: 6px 0;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.4
+      }
+    }
+
+    .captures-scroll {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .captures-inner {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .empty-msg {
+      text-align: center;
+      color: #bbb;
+      font-size: 11px;
+      padding: 20px 8px;
+      line-height: 1.7;
+    }
+
+    .capture-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid #eee;
+      border-radius: 6px;
+      padding: 6px;
+      background: #fafafa;
+    }
+
+    .capture-thumb {
+      width: 58px;
+      height: 38px;
+      object-fit: cover;
+      border-radius: 3px;
+      border: 1px solid #e5e5e5;
+      flex-shrink: 0;
+    }
+
+    .capture-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .capture-name-input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-size: 11px;
+      font-weight: 600;
+      color: #333;
+      padding: 1px 0;
+    }
+
+    .capture-name-input:focus {
+      outline: 1px solid #18A0FB;
+      border-radius: 2px;
+      padding: 1px 3px;
+      background: white;
+    }
+
+    .capture-time {
+      font-size: 10px;
+      color: #bbb;
+    }
+
+    .capture-del {
+      background: none;
+      border: none;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 2px;
+      flex-shrink: 0;
+    }
+
+    .capture-del:hover {
+      color: #c00;
+    }
+
+    .export-footer {
+      padding: 10px 12px;
+      border-top: 1px solid #eee;
+      flex-shrink: 0;
+    }
+
+    .export-btn {
+      width: 100%;
+      padding: 9px;
+      background: #6c46b8;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: background 0.2s;
+    }
+
+    .export-btn:hover {
+      background: #5a3aa0;
+    }
+
+    .export-btn:disabled {
+      background: #c4b0e0;
+      cursor: not-allowed;
+    }
+
+    .preview-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #f5f5f5;
+      min-height: 0;
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      background: #efefef;
+      border-bottom: 1px solid #e0e0e0;
+      flex-shrink: 0;
+    }
+
+    .preview-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #666;
+    }
+
+    #preview-status {
+      font-size: 10px;
+      color: #18A0FB;
+    }
+
+    .reload-btn {
+      padding: 4px 10px;
+      background: #e0e0e0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      color: #444;
+    }
+
+    .reload-btn:hover {
+      background: #d4d4d4;
+    }
+
+    .preview-scaler {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+      min-height: 0;
+      background: #e8e8e8;
+    }
+
+    #preview-iframe {
+      display: block;
+      border: none;
+      background: white;
+      /* 크기는 JS로 동적 설정 */
+    }
+
+    .viewport-select {
+      font-size: 10px;
+      padding: 3px 6px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      color: #555;
+      cursor: pointer;
+    }
+
+    /* 캡처 플래시 */
+    .flash-overlay {
+      position: fixed;
+      inset: 0;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transition: opacity 0.08s;
+    }
+
+    .flash-overlay.on {
+      opacity: 0.7;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="flash-overlay" id="flash"></div>
+
+  <!-- 탭 바 -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-settings" onclick="switchTab('settings')">⚙️ 설정 & 변환</button>
+    <button class="tab-btn" id="tab-preview" onclick="switchTab('preview')">🎬 인터랙티브 캡처</button>
+  </div>
+
+  <!-- ═══ 설정 패널 ═══ -->
+  <div id="settings-panel" class="panel">
+    <div class="settings-scroll">
+      <h2>🎨 HTML → Figma 변환기</h2>
+
+      <div class="radio-group">
+        <div class="radio-item">
+          <input type="radio" id="mode-url" name="mode" value="url" checked onchange="toggleMode()">
+          <label for="mode-url" style="margin:0;font-weight:normal;cursor:pointer;">URL 입력</label>
+        </div>
+        <div class="radio-item">
+          <input type="radio" id="mode-html" name="mode" value="html" onchange="toggleMode()">
+          <label for="mode-html" style="margin:0;font-weight:normal;cursor:pointer;">HTML 코드</label>
+        </div>
+        <div class="radio-item">
+          <input type="radio" id="mode-file" name="mode" value="file" onchange="toggleMode()">
+          <label for="mode-file" style="margin:0;font-weight:normal;cursor:pointer;">HTML 파일</label>
+        </div>
+      </div>
+
+      <div class="input-group" id="url-container">
+        <label for="url-input">웹사이트 URL</label>
+        <input type="text" id="url-input" placeholder="https://example.com/page">
+      </div>
+      <div class="input-group" id="html-container" style="display:none;">
+        <label for="html-input">HTML 코드</label>
+        <textarea id="html-input" style="height:80px;"
+          placeholder="<div style='background:blue;'>Hello</div>"></textarea>
+      </div>
+      <div class="input-group" id="file-container" style="display:none;">
+        <label>HTML 파일 선택</label>
+        <div class="file-drop-zone" id="file-drop-zone">
+          <input type="file" id="html-file-input" accept=".html,.htm" onchange="onFileSelected(this)">
+          📂 클릭하거나 파일을 드래그하세요
+        </div>
+        <div class="file-name" id="file-name-display"></div>
+        <div class="hint">💡 "인터랙티브 캡처" 탭에서 미리보기 후 상태별 캡처 가능</div>
+      </div>
+
+      <div class="section-title">🖱️ 동적 상태 캡처 (모달/팝업)</div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">모든 숨김 요소 표시</div>
+          <div class="toggle-desc">display:none / visibility:hidden 제거 후 캡처</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="show-hidden">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="input-group">
+        <label>캡처 전 클릭할 요소 (CSS 셀렉터)</label>
+        <div class="hint">모달/팝업/탭을 여는 버튼 셀렉터 입력 시 클릭 후 캡처</div>
+        <div class="selector-list" id="selector-list" style="margin-top:6px;">
+          <div class="selector-row">
+            <input type="text" placeholder="#modal-btn 또는 .tab-2">
+            <button class="selector-del" onclick="removeSelector(this)">×</button>
+          </div>
+        </div>
+        <button class="selector-add" style="margin-top:5px;" onclick="addSelector()">+ 셀렉터 추가</button>
+      </div>
+    </div>
+    <div class="settings-footer">
+      <button id="generate-btn" onclick="generate()">이미지 생성하기</button>
+    </div>
+  </div>
+
+  <!-- ═══ 미리보기 패널 ═══ -->
+  <div id="preview-panel" class="panel" style="display:none;">
+    <div class="preview-layout">
+
+      <!-- 사이드바 -->
+      <div class="preview-sidebar">
+        <div class="sb-section">
+          <div class="sb-title">📸 상태 캡처</div>
+          <div class="sb-hint">미리보기에서 마우스오버·클릭 등으로 상태를 만들 수 있습니다.<br><b>(우클릭 시 hover 상태가 기록됩니다)</b></div>
+          <div id="action-tracker"
+            style="font-size:11px; color:#18A0FB; font-weight:600; margin-bottom:8px; padding:4px; background:#eef8ff; border-radius:4px;">
+            기록된 액션: <span id="action-count">0</span>개
+            <button onclick="clearActions()"
+              style="border:none;background:none;color:#888;cursor:pointer;text-decoration:underline;margin-left:6px;font-size:10px;">초기화</button>
+          </div>
+          <div class="shortcut-badge">Ctrl+Shift+C = 즉시 이미지 캡처</div>
+          <input type="text" id="capture-label-input" placeholder="상태 이름 (예: 호버, 팝업 열림)">
+          <div class="btn-row">
+            <button class="btn-capture" onclick="captureNow()">📸 즉시 캡처</button>
+            <button class="btn-delay" onclick="captureWithDelay()">⏱️ 3초 후</button>
+          </div>
+          <div id="countdown-display" class="countdown" style="display:none;"></div>
+        </div>
+
+        <!-- 캡처 목록 -->
+        <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+          <div style="padding:8px 12px 6px;border-bottom:1px solid #eee;flex-shrink:0;">
+            <div class="sb-title" style="margin:0;">📋 캡처 목록 <span id="capture-count"
+                style="font-weight:400;color:#aaa;">(0개)</span></div>
+          </div>
+          <div class="captures-scroll">
+            <div class="captures-inner" id="captures-list">
+              <div class="empty-msg" id="empty-msg">
+                캡처한 상태가 없습니다.<br>미리보기를 조작한 후<br>📸 캡처 버튼을 눌러보세요!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="export-footer" style="display:flex; flex-direction:column; gap:8px;">
+          <button class="export-btn" id="export-dom-btn" onclick="exportDOM()"
+            style="background: #18A0FB; color: white; display:flex; flex-direction:column; align-items:center; gap:2px;">
+            <span>🚀 현재 상태를 피그마 레이어로 굽기</span>
+            <span style="font-size:9px; opacity:0.8; font-weight:normal;">(화면 전체를 개별 블럭으로 변환)</span>
+          </button>
+          <div style="height:1px; background:#e5e5e5; margin: 4px 0;"></div>
+          <button class="export-btn" id="export-btn" onclick="exportToFigma()" disabled
+            style="background: #333; color: white;">
+            🖼️ 캡처 이미지로 추가 (0개)
+          </button>
+        </div>
+      </div>
+
+      <!-- 미리보기 영역 -->
+      <div class="preview-main">
+        <div class="preview-header">
+          <span class="preview-label">🌐 인터랙티브 미리보기</span>
+          <span id="preview-status"></span>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <select class="viewport-select" id="viewport-select" onchange="onViewportChange()">
+              <option value="1920">🖥 1920px (Full HD)</option>
+              <option value="1440">💻 1440px (노트북)</option>
+              <option value="1280">💻 1280px</option>
+              <option value="768">📱 768px (태블릿)</option>
+              <option value="375">📱 375px (모바일)</option>
+            </select>
+            <button class="reload-btn" onclick="reloadPreview()">🔄 새로고침</button>
+            <div style="display:flex;align-items:center;gap:3px;background:#e4e4e4;border-radius:6px;padding:2px 4px;">
+              <button class="reload-btn" onclick="setZoom(_zoomLevel - 0.1)" title="축소"
+                style="padding:3px 7px;font-size:13px;">−</button>
+              <span id="zoom-label"
+                style="font-size:11px;min-width:38px;text-align:center;color:#555;font-weight:600;">--</span>
+              <button class="reload-btn" onclick="setZoom(_zoomLevel + 0.1)" title="확대"
+                style="padding:3px 7px;font-size:13px;">+</button>
+              <button class="reload-btn" onclick="resetZoom()" title="화면 맞춤" style="padding:3px 7px;font-size:10px;">⊡
+                맞춤</button>
+            </div>
+          </div>
+        </div>
+        <div class="preview-scaler" id="preview-scaler">
+          <!-- zoom-spacer: 스크롤 공간 확보 / iframe: 절대 위치로 scale 적용 -->
+          <div id="zoom-spacer" style="position:relative; flex-shrink:0;">
+            <iframe id="preview-iframe" style="position:absolute;top:0;left:0;border:none;transform-origin:top left;"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms">
+            </iframe>
+            <!-- Ctrl 키 누를 때만 활성화: 프레임의 휠 이벤트 가로채기 방지 -->
+            <div id="ctrl-overlay" style="
+              display:none; position:absolute; top:0; left:0;
+              width:100%; height:100%;
+              z-index:10; cursor:zoom-in;
+            "></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ─── 공유 상태 ─────────────────────────────────── */
+    var _fileHtmlContent = '';
+    var _captures = [];
+    var _recordedActions = [];
+    var _previewReady = false;
+    var _countdownTimer = null;
+    var _viewportWidth = 1920;
+    var _zoomLevel = 1.0;
+    var _fitScale = 1.0;
+    var _iframeH = 1080; // 동적 추정됨
+
+    /* ─── fit-to-screen + 줌 ───────────────────── */
+    function getFitScale() {
+      var scaler = document.getElementById('preview-scaler');
+      if (!scaler) return 1;
+      return scaler.offsetWidth / _viewportWidth;
+    }
+
+    function updateScale() {
+      var iframe = document.getElementById('preview-iframe');
+      var spacer = document.getElementById('zoom-spacer');
+      if (!iframe || !spacer) return;
+      var z = _zoomLevel;
+      iframe.style.width = _viewportWidth + 'px';
+      iframe.style.height = _iframeH + 'px';
+      iframe.style.transform = 'scale(' + z + ')';
+      // spacer 크기 = 스케일드된 내용 시각적 크기 → 스크롤바 제대로 동작
+      spacer.style.width = Math.ceil(_viewportWidth * z) + 'px';
+      spacer.style.height = Math.ceil(_iframeH * z) + 'px';
+      // 오버레이는 CSS width/height:100%으로 spacer를 자동 커버
+    }
+
+    function _refreshLabel() {
+      var pct = Math.round((_zoomLevel / _fitScale) * 100);
+      var el = document.getElementById('zoom-label');
+      if (el) el.textContent = pct + '%';
+    }
+
+    function setZoom(level) {
+      var minZ = _fitScale * 0.1;
+      var maxZ = _fitScale * 10;
+      _zoomLevel = Math.min(maxZ, Math.max(minZ, level));
+      _refreshLabel();
+      updateScale();
+    }
+
+    function resetZoom() {
+      var scaler = document.getElementById('preview-scaler');
+      _fitScale = getFitScale();
+      // fit 상태에서 iframe 높이 = 스케일러 높이에 딥 맞게, 최대 6000px
+      _iframeH = scaler ? Math.min(6000, Math.round(scaler.offsetHeight / _fitScale)) : 3000;
+      _zoomLevel = _fitScale;
+      _refreshLabel(); // → 100%
+      updateScale();
+    }
+
+    // Ctrl 키: 오버레이 ON/OFF
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Control') return;
+      var ol = document.getElementById('ctrl-overlay');
+      if (ol) ol.style.display = 'block';
+    });
+    document.addEventListener('keyup', function (e) {
+      if (e.key !== 'Control') return;
+      var ol = document.getElementById('ctrl-overlay');
+      if (ol) ol.style.display = 'none';
+    });
+
+    // Ctrl + 휠: 오버레이에서 쫭치
+    (function setupWheelZoom() {
+      function doZoom(e) {
+        e.preventDefault();
+        var step = _fitScale * 0.08;
+        setZoom(_zoomLevel + (e.deltaY > 0 ? -step : step));
+      }
+      var ol = document.getElementById('ctrl-overlay');
+      if (ol) ol.addEventListener('wheel', doZoom, { passive: false });
+      var sc = document.getElementById('preview-scaler');
+      if (sc) {
+        sc.addEventListener('wheel', function (e) {
+          if (!e.ctrlKey) return;
+          doZoom(e);
+        }, { passive: false });
+      }
+    })();
+
+    function onViewportChange() {
+      var sel = document.getElementById('viewport-select');
+      _viewportWidth = parseInt(sel.value) || 1920;
+      updateScale();
+      // 뷰포트 변경 시 미리보기 새로고침
+      reloadPreview();
+    }
+
+    window.addEventListener('resize', updateScale);
+
+    /* ─── 탭 전환 ────────────────────────────────────── */
+    function switchTab(tab) {
+      document.getElementById('tab-settings').classList.toggle('active', tab === 'settings');
+      document.getElementById('tab-preview').classList.toggle('active', tab === 'preview');
+      document.getElementById('settings-panel').style.display = tab === 'settings' ? 'flex' : 'none';
+      document.getElementById('preview-panel').style.display = tab === 'preview' ? 'flex' : 'none';
+
+      if (tab === 'preview') {
+        // 먼저 패널을 보여준 뒤 크기를 계산해야 offsetWidth가 정확함
+        document.getElementById('preview-panel').style.display = 'flex';
+        parent.postMessage({ pluginMessage: { type: 'resize', width: 1280, height: 720 } }, '*');
+        setTimeout(function () {
+          resetZoom();   // 패널이 실제 크기를 가진 뒤에 fit scale 계산
+          loadPreview();
+        }, 350);
+      } else {
+        parent.postMessage({ pluginMessage: { type: 'resize', width: 340, height: 490 } }, '*');
+      }
+    }
+
+    /* ─── 설정 탭 ────────────────────────────────────── */
+    function toggleMode() {
+      var m = document.querySelector('input[name="mode"]:checked').value;
+      document.getElementById('url-container').style.display = m === 'url' ? 'block' : 'none';
+      document.getElementById('html-container').style.display = m === 'html' ? 'block' : 'none';
+      document.getElementById('file-container').style.display = m === 'file' ? 'block' : 'none';
+      _previewReady = false;
+    }
+
+    function onFileSelected(input) {
+      var file = input.files[0];
+      if (!file) return;
+      document.getElementById('file-name-display').innerText = '📄 ' + file.name;
+      var r = new FileReader();
+      r.onload = function (e) { _fileHtmlContent = e.target.result; _previewReady = false; };
+      r.readAsText(file, 'UTF-8');
+    }
+
+    var dz = document.getElementById('file-drop-zone');
+    dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('drag-over'); });
+    dz.addEventListener('dragleave', function () { dz.classList.remove('drag-over'); });
+    dz.addEventListener('drop', function (e) {
+      e.preventDefault(); dz.classList.remove('drag-over');
+      var file = e.dataTransfer.files[0];
+      if (file && (file.name.endsWith('.html') || file.name.endsWith('.htm'))) {
+        document.getElementById('file-name-display').innerText = '📄 ' + file.name;
+        var r = new FileReader();
+        r.onload = function (ev) { _fileHtmlContent = ev.target.result; _previewReady = false; };
+        r.readAsText(file, 'UTF-8');
+      } else { alert('.html 또는 .htm 파일만 지원합니다.'); }
+    });
+
+    function addSelector() {
+      var list = document.getElementById('selector-list');
+      var row = document.createElement('div'); row.className = 'selector-row';
+      row.innerHTML = '<input type="text" placeholder="#modal-btn 또는 .tab-2"><button class="selector-del" onclick="removeSelector(this)">×</button>';
+      list.appendChild(row);
+    }
+    function removeSelector(btn) {
+      var list = document.getElementById('selector-list');
+      if (list.children.length > 1) btn.parentElement.remove();
+      else btn.previousElementSibling.value = '';
+    }
+
+    /* ─── 캐쳐 중 플러그인 축소/복원 ──────────────── */
+    var _captureTabBefore = 'settings'; // 캐쳐 시작 전 탭
+    var _captureWidthBefore = 340;
+    var _captureHeightBefore = 490;
+
+    function minimizeForCapture() {
+      var activeTab = document.getElementById('tab-preview').classList.contains('active') ? 'preview' : 'settings';
+      _captureTabBefore = activeTab;
+      _captureWidthBefore = activeTab === 'preview' ? 1280 : 340;
+      _captureHeightBefore = activeTab === 'preview' ? 720 : 490;
+      // 플러그인을 작은 상태 표시줄로 접기기
+      parent.postMessage({ pluginMessage: { type: 'resize', width: 260, height: 40 } }, '*');
+    }
+
+    function restoreFromCapture() {
+      parent.postMessage({ pluginMessage: { type: 'resize', width: _captureWidthBefore, height: _captureHeightBefore } }, '*');
+    }
+
+    function generate() {
+      var m = document.querySelector('input[name="mode"]:checked').value;
+      var value;
+      if (m === 'url') { value = document.getElementById('url-input').value; if (!value.trim()) { alert('URL을 입력해주세요.'); return; } }
+      else if (m === 'html') { value = document.getElementById('html-input').value; if (!value.trim()) { alert('HTML 코드를 입력해주세요.'); return; } }
+      else if (m === 'file') { value = _fileHtmlContent; if (!value.trim()) { alert('HTML 파일을 선택해주세요.'); return; } }
+
+      var selectors = [];
+      document.querySelectorAll('#selector-list input').forEach(function (inp) { var s = inp.value.trim(); if (s) selectors.push(s); });
+
+      var btn = document.getElementById('generate-btn');
+      btn.innerText = '렌더링 중...'; btn.disabled = true;
+
+      minimizeForCapture(); // ← 플러그인 축소
+
+      parent.postMessage({
+        pluginMessage: {
+          type: 'generate-screenshot',
+          mode: m === 'file' ? 'html' : m,
+          value: value,
+          clickSelectors: selectors,
+          viewport: _viewportWidth,
+          showHidden: document.getElementById('show-hidden').checked
+        }
+      }, '*');
+      // code.js에서 완료 메시지(generate-done)가 오면 restoreFromCapture 호출
+    }
+
+    /* ─── 미리보기 & 캡처 ────────────────────────────── */
+
+    // iframe에 주입할 캡처 스크립트 (html2canvas CDN 포함)
+    var INJECTED = [
+      '<scr' + 'ipt>',
+      '(function(){',
+      '  if(window.__fcReady) return; window.__fcReady = true;',
+      '  var s = document.createElement("script");',
+      '  s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";',
+      '  s.onload = function() {',
+      '    window.addEventListener("message", function(e){',
+      '      if(e.data && e.data.type === "do-capture") {',
+      '        html2canvas(document.documentElement, {',
+      '          useCORS:true, allowTaint:true, scale:1, logging:false,',
+      '          width: document.documentElement.scrollWidth,',
+      '          height: document.documentElement.scrollHeight',
+      '        }).then(function(c){',
+      '          parent.postMessage({type:"capture-result", data:c.toDataURL("image/png"), w:c.width, h:c.height},"*");',
+      '        }).catch(function(e){ parent.postMessage({type:"capture-error",error:String(e)},"*"); });',
+      '      }',
+      '    });',
+      '    document.addEventListener("keydown", function(e){',
+      '      if(e.ctrlKey && e.shiftKey && (e.key==="C"||e.key==="c")){',
+      '        e.preventDefault();',
+      '        parent.postMessage({type:"shortcut-capture"},"*");',
+      '      }',
+      '    });',
+      '    function getSelector(el) {',
+      '      if(el.tagName.toLowerCase()=="html" || el.tagName.toLowerCase()=="body") return "body";',
+      '      let path=[], node=el;',
+      '      while(node && node.nodeType===1){',
+      '        let sel=node.nodeName.toLowerCase();',
+      '        if(node.id) { path.unshift("#"+node.id); break; }',
+      '        let sib=node, nth=1;',
+      '        while((sib=sib.previousElementSibling)){ if(sib.nodeName.toLowerCase()===sel) nth++; }',
+      '        if(nth!==1) sel+=":nth-of-type("+nth+")";',
+      '        path.unshift(sel); node=node.parentNode;',
+      '      }',
+      '      return path.join(" > ");',
+      '    }',
+      '    document.addEventListener("click", function(e){',
+      '      parent.postMessage({type:"recorded-action", action:"click", selector:getSelector(e.target)}, "*");',
+      '    }, true);',
+      '    document.addEventListener("contextmenu", function(e){',
+      '      if(e.shiftKey) return;',
+      '      e.preventDefault();',
+      '      parent.postMessage({type:"recorded-action", action:"hover", selector:getSelector(e.target)}, "*");',
+      '    }, true);',
+      '  };',
+      '  (document.head||document.body||document.documentElement).appendChild(s);',
+      '})();',
+      '<\/scr' + 'ipt>'
+    ].join('\n');
+
+    function injectScript(html) {
+      if (html.indexOf('</body>') !== -1) return html.replace('</body>', INJECTED + '</body>');
+      if (html.indexOf('</html>') !== -1) return html.replace('</html>', INJECTED + '</html>');
+      return html + INJECTED;
+    }
+
+    function getSourceHtml() {
+      var m = document.querySelector('input[name="mode"]:checked').value;
+      if (m === 'html') return document.getElementById('html-input').value;
+      if (m === 'file') return _fileHtmlContent;
+      return null;
+    }
+    function getSourceUrl() {
+      var m = document.querySelector('input[name="mode"]:checked').value;
+      return m === 'url' ? document.getElementById('url-input').value.trim() : null;
+    }
+
+    var EMPTY_GUIDE = [
+      '<!DOCTYPE html><html><head><meta charset="UTF-8">',
+      '<style>',
+      'body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;',
+      'display:flex;align-items:center;justify-content:center;height:100vh;background:#fafafa;color:#aaa;}',
+      '.guide{text-align:center;line-height:2;}',
+      '.guide h3{font-size:18px;color:#ccc;margin-bottom:8px;}',
+      '.guide p{font-size:12px;}',
+      '</style></head><body>',
+      '<div class="guide">',
+      '<h3>🎬 인터랙티브 미리보기</h3>',
+      '<p>⚙️ 설정 탭에서 <b>HTML 파일</b> 또는 <b>HTML 코드</b>를 선택한 후<br>',
+      '이 탭으로 돌아오면 자동으로 미리보기가 로드됩니다.</p>',
+      '</div>',
+      '</body></html>'
+    ].join('');
+
+    function clearActions() {
+      _recordedActions = [];
+      document.getElementById('action-count').textContent = '0';
+    }
+
+    function loadPreview() {
+      clearActions();
+      var iframe = document.getElementById('preview-iframe');
+      var status = document.getElementById('preview-status');
+      var html = getSourceHtml();
+      var url = getSourceUrl();
+
+      if (!html && !url) {
+        iframe.removeAttribute('src');
+        iframe.srcdoc = EMPTY_GUIDE;
+        status.textContent = '⚠️ 설정 탭에서 HTML 소스를 먼저 설정하세요';
+        _previewReady = false;
+        return;
+      }
+
+      _previewReady = false;
+
+      if (url) {
+        status.textContent = '🔄 서버에서 실제 페이지 연결 중...';
+        iframe.removeAttribute('srcdoc');
+        iframe.src = 'http://localhost:3000/api/set-target?url=' + encodeURIComponent(url);
+
+        iframe.onload = function () {
+          status.textContent = '✅ 로드 완료 · Ctrl+Shift+C 또는 버튼으로 캡처';
+          _previewReady = true;
+          updateScale();
+        };
+
+      } else {
+        // HTML/파일 모드 → 직접 srcdoc
+        status.textContent = '로딩 중...';
+        iframe.removeAttribute('src');
+        iframe.srcdoc = injectScript(html);
+        updateScale();
+        iframe.onload = function () {
+          status.textContent = '✅ 로드 완료 · Ctrl+Shift+C 또는 버튼으로 캡처';
+          _previewReady = true;
+          updateScale();
+        };
+      }
+    }
+
+    function reloadPreview() { _previewReady = false; loadPreview(); }
+
+    /* ─── 캡처 실행 ──────────────────────────────────── */
+    function triggerCapture() {
+      var btn1 = document.getElementById('capture-btn');
+      var btn2 = document.getElementById('delay-capture-btn');
+      var backupText = btn1 ? btn1.innerText : '📸 즉시 캡처';
+
+      if (btn1) { btn1.innerText = '⏳ 캐쳐 중...'; btn1.disabled = true; }
+      if (btn2) btn2.disabled = true;
+
+      minimizeForCapture(); // ← 플러그인 축소
+
+      var m = document.querySelector('input[name="mode"]:checked').value;
+      var value = getSourceUrl() || getSourceHtml();
+
+      var selectors = [];
+      document.querySelectorAll('#selector-list input').forEach(function (inp) {
+        if (inp.value.trim()) selectors.push(inp.value.trim());
+      });
+
+      var payload = {
+        url: m === 'url' ? value : null,
+        html: m !== 'url' ? value : null,
+        clickSelectors: selectors,
+        actions: _recordedActions,
+        viewport: { width: _viewportWidth, height: 1080 },
+        showHidden: document.getElementById('show-hidden').checked
+      };
+
+      fetch('http://localhost:3000/api/screenshot-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.success && data.base64) {
+            // capture-result 메시지를 던져서 기존 html2canvas 캡처 후 처리 로직과 동일하게 동작하도록 함
+            window.postMessage({ type: 'capture-result', data: data.base64, w: data.width, h: data.height }, '*');
+          } else {
+            alert('캡처 실패: ' + (data.error || '알 수 없음'));
+          }
+        })
+        .catch(function (err) {
+          alert('서버 연결 오류: ' + String(err));
+        })
+        .finally(function () {
+          restoreFromCapture(); // ← 플러그인 복원
+          if (btn1) { btn1.innerText = backupText; btn1.disabled = false; }
+          if (btn2) btn2.disabled = false;
+        });
+    }
+
+    function captureNow() {
+      if (!_previewReady) { alert('미리보기를 먼저 로드해주세요.'); return; }
+      if (_countdownTimer) return;
+      triggerCapture();
+    }
+
+    function captureWithDelay() {
+      if (!_previewReady) { alert('미리보기를 먼저 로드해주세요.'); return; }
+      if (_countdownTimer) return;
+      var el = document.getElementById('countdown-display');
+      var count = 3;
+      el.style.display = 'block';
+      el.textContent = count + '초 후 캡처...';
+      _countdownTimer = setInterval(function () {
+        count--;
+        if (count > 0) {
+          el.textContent = count + '초 후 캡처...';
+        } else {
+          clearInterval(_countdownTimer); _countdownTimer = null;
+          el.style.display = 'none';
+          triggerCapture();
+        }
+      }, 1000);
+    }
+
+    /* ─── 캡처 수신 ──────────────────────────────────── */
+    window.addEventListener('message', function (e) {
+      var msg = e.data;
+      if (!msg) return;
+
+      if (msg.type === 'recorded-action') {
+        _recordedActions.push({ type: msg.action, selector: msg.selector });
+        document.getElementById('action-count').textContent = String(_recordedActions.length);
+        return;
+      }
+
+      // iframe → 단축키 캡처 요청
+      if (msg.type === 'shortcut-capture') {
+        if (_previewReady) triggerCapture();
+        return;
+      }
+
+      // iframe → 캡처 결과
+      if (msg.type === 'capture-result') {
+        var flash = document.getElementById('flash');
+        flash.classList.add('on');
+        setTimeout(function () { flash.classList.remove('on'); }, 150);
+
+        var label = document.getElementById('capture-label-input').value.trim()
+          || ('캡처 ' + (_captures.length + 1));
+        var now = new Date();
+        var timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+        var id = Date.now();
+        _captures.push({ id: id, label: label, data: msg.data, w: msg.w, h: msg.h, time: timeStr });
+        renderCaptureList();
+        document.getElementById('capture-label-input').value = '';
+        return;
+      }
+
+      if (msg.type === 'capture-error') {
+        alert('캡처 실패: ' + msg.error);
+        return;
+      }
+
+      // code.js → UI 메시지
+      var pm = msg.pluginMessage;
+      if (!pm) return;
+
+      if (pm.type === 'generation-done') {
+        restoreFromCapture(); // ← 플러그인 복원
+        var btn1 = document.getElementById('generate-btn');
+        if (btn1) { btn1.innerText = '이미지 생성하기'; btn1.disabled = false; }
+
+        var btn2 = document.getElementById('export-dom-btn');
+        if (btn2) {
+          btn2.innerHTML = `
+            <span>🚀 현재 상태를 피그마 레이어로 굽기</span>
+            <span style="font-size:9px; opacity:0.8; font-weight:normal;">(화면 전체를 개별 블럭으로 변환)</span>
+          `;
+          btn2.disabled = false;
+        }
+      }
+      if (pm.type === 'export-done') {
+        restoreFromCapture(); // ← 플러그인 복원
+        alert('✅ Figma로 내보내기 완료!');
+      }
+    });
+
+    /* ─── 캡처 목록 렌더링 ───────────────────────────── */
+    function renderCaptureList() {
+      var list = document.getElementById('captures-list');
+      var empty = document.getElementById('empty-msg');
+      var count = document.getElementById('capture-count');
+      var exportBtn = document.getElementById('export-btn');
+
+      count.textContent = '(' + _captures.length + '개)';
+      exportBtn.disabled = _captures.length === 0;
+      exportBtn.textContent = '🎨 Figma로 내보내기 (' + _captures.length + '개)';
+
+      // empty 메시지 토글
+      if (_captures.length === 0) {
+        empty.style.display = 'block';
+      } else {
+        empty.style.display = 'none';
+      }
+
+      // 기존 아이템 제거 후 재렌더
+      var oldItems = list.querySelectorAll('.capture-item');
+      oldItems.forEach(function (el) { el.remove(); });
+
+      _captures.forEach(function (cap) {
+        var item = document.createElement('div');
+        item.className = 'capture-item';
+        item.dataset.id = cap.id;
+        item.innerHTML =
+          '<img class="capture-thumb" src="' + cap.data + '">' +
+          '<div class="capture-info">' +
+          '<input class="capture-name-input" value="' + escHtml(cap.label) + '" onchange="renameCapture(' + cap.id + ', this.value)">' +
+          '<div class="capture-time">' + cap.time + ' · ' + cap.w + '×' + cap.h + '</div>' +
+          '</div>' +
+          '<button class="capture-del" onclick="deleteCapture(' + cap.id + ')">×</button>';
+        list.appendChild(item);
+      });
+    }
+
+    function escHtml(s) { return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+    function renameCapture(id, val) {
+      var cap = _captures.find(function (c) { return c.id === id; });
+      if (cap) cap.label = val;
+    }
+
+    function deleteCapture(id) {
+      _captures = _captures.filter(function (c) { return c.id !== id; });
+      renderCaptureList();
+    }
+
+    /* ─── Figma 레이어 렌더링 (DOM 기반) ──────────────── */
+    function exportDOM() {
+      var m = document.querySelector('input[name="mode"]:checked').value;
+      var value;
+
+      if (m === 'url') {
+        value = document.getElementById('url-input').value;
+        if (!value.trim()) { alert('URL을 입력해주세요.'); return; }
+      } else if (m === 'html') {
+        value = document.getElementById('html-input').value;
+        if (!value.trim()) { alert('HTML 코드를 입력해주세요.'); return; }
+      } else if (m === 'file') {
+        value = _fileHtmlContent;
+        if (!value.trim()) { alert('HTML 파일을 선택해주세요.'); return; }
+      }
+
+      var btn = document.getElementById('export-dom-btn');
+      var oldText = btn.innerHTML;
+      btn.innerHTML = '🔄 서버 처리 중...';
+      btn.disabled = true;
+
+      minimizeForCapture();
+
+      parent.postMessage({
+        pluginMessage: {
+          type: 'generate-screenshot',
+          mode: m === 'file' ? 'html' : m,
+          value: value,
+          actions: _recordedActions,
+          viewport: _viewportWidth,
+          showHidden: document.getElementById('show-hidden').checked
+        }
+      }, '*');
+
+      // 렌더링 후 복구는 generation-done 메시지에서 처리됨 (btn 참조는 다시 가져와야 함)
+    }
+
+    /* ─── Figma 내보내기 ─────────────────────────────── */
+    function exportToFigma() {
+      if (_captures.length === 0) return;
+      minimizeForCapture();
+      parent.postMessage({
+        pluginMessage: {
+          type: 'export-captures',
+          captures: _captures.map(function (c) {
+            return { label: c.label, data: c.data, width: c.w, height: c.h };
+          })
+        }
+      }, '*');
+    }
+  </script>
+</body>
+
+</html>

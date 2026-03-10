@@ -1,0 +1,17 @@
+{
+    "name": "Local Screenshot to Figma",
+    "id": "1613062635603673054",
+    "documentAccess": "dynamic-page",
+    "api": "1.0.0",
+    "main": "code.js",
+    "ui": "ui.html",
+    "editorType": [
+        "figma"
+    ],
+    "networkAccess": {
+        "allowedDomains": [
+            "http://localhost:3000"
+        ],
+        "reasoning": "로컬 스크린샷 렌더링 서버와 통신하기 위해 필요합니다."
+    }
+}
