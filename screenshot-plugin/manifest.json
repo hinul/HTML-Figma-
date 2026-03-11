@@ -10,7 +10,7 @@
     ],
     "networkAccess": {
         "allowedDomains": [
-            "http://localhost:3000"
+            "*"
         ],
         "reasoning": "로컬 스크린샷 렌더링 서버와 통신하기 위해 필요합니다."
     }

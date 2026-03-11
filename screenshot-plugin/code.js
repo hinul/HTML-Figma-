@@ -259,33 +259,14 @@ figma.ui.onmessage = async function (msg) {
         return;
     }
 
-    if (msg.type !== 'generate-screenshot') return;
-
-    try {
-        figma.notify('서버에서 데이터 가져오는 중...');
-
-        var payload = msg.mode === 'url' ? { url: msg.value } : { html: msg.value };
-        payload.clickSelectors = msg.clickSelectors || [];
-        payload.actions = msg.actions || [];
-        payload.viewport = msg.viewport ? { width: msg.viewport, height: 1080 } : null;
-        payload.showHidden = msg.showHidden || false;
-
-        var resp = await fetch('http://localhost:3000/api/screenshot', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!resp.ok) throw new Error('서버 응답 오류: ' + resp.status);
-
-        var result = await resp.json();
-
-        if (!result.success || !result.data) {
-            figma.notify('❌ 데이터를 받지 못했습니다.', { error: true });
-            return;
-        }
-
-        var tree = result.data;
+    if (msg.type === 'render-dom') {
+        try {
+            var tree = msg.data;
+            if (!tree) {
+                figma.notify('❌ 데이터를 받지 못했습니다.', { error: true });
+                figma.ui.postMessage({ type: 'generation-done' });
+                return;
+            }
 
         // ── 섹션(Section) 생성 및 묶기 ────────────────────────────────
         var rootW = Math.max(1, tree.width || 1920);
@@ -327,4 +308,5 @@ figma.ui.onmessage = async function (msg) {
     } finally {
         figma.ui.postMessage({ type: 'generation-done' });
     }
+}
 };
