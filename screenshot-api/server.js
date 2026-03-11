@@ -66,9 +66,11 @@ app.post('/api/screenshot', async (req, res) => {
                         const el = document.querySelector(sel);
                         if (el) {
                             el.scrollIntoView({ block: 'center', inline: 'center' });
-                            el.click();
                         }
                     }, action.selector);
+                    await new Promise(r => setTimeout(r, 300));
+                    // 사람처럼 실제 마우스 클릭 유도 (React 등 이벤트 캐치 호환성 향상)
+                    await page.click(action.selector);
                     await new Promise(r => setTimeout(r, 600));
                 } else if (action.type === 'hover') {
                     await page.hover(action.selector);
@@ -424,9 +426,11 @@ app.post('/api/screenshot-image', async (req, res) => {
                         const el = document.querySelector(sel);
                         if (el) {
                             el.scrollIntoView({ block: 'center', inline: 'center' });
-                            el.click();
                         }
                     }, action.selector);
+                    await new Promise(r => setTimeout(r, 300));
+                    // 사람처럼 실제 마우스 클릭 유도 (React 등 이벤트 캐치 호환성 향상)
+                    await page.click(action.selector);
                     await new Promise(r => setTimeout(r, 600));
                 } else if (action.type === 'hover') {
                     await page.hover(action.selector);
