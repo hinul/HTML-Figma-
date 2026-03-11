@@ -47,6 +47,7 @@ app.post('/api/screenshot', async (req, res) => {
         } else if (html) {
             await page.setContent(html, { waitUntil: 'networkidle2', timeout: 30000 });
         }
+        await new Promise(r => setTimeout(r, 4000)); // 애니메이션 및 그래프 렌더링 대기 (넉넉하게 4초)
 
         // ── 액션 수행 (클릭/호버) ─────────────────────────────
         const combinedActions = [];
@@ -61,16 +62,23 @@ app.post('/api/screenshot', async (req, res) => {
             try {
                 await page.waitForSelector(action.selector, { timeout: 3000 });
                 if (action.type === 'click') {
-                    await page.click(action.selector);
+                    await page.evaluate((sel) => {
+                        const el = document.querySelector(sel);
+                        if (el) {
+                            el.scrollIntoView({ block: 'center', inline: 'center' });
+                            el.click();
+                        }
+                    }, action.selector);
                     await new Promise(r => setTimeout(r, 600));
                 } else if (action.type === 'hover') {
                     await page.hover(action.selector);
                     await new Promise(r => setTimeout(r, 600));
                 }
             } catch (e) {
-                console.warn(`[액션 실패] ${action.type} ${action.selector}: ${e.message}`);
+                console.warn(`[액션 실패] ${action.type}: ${action.selector}`);
             }
         }
+        await new Promise(r => setTimeout(r, 3000)); // 액션이 모두 끝나고 레이아웃/앱 데이터가 완전히 로딩되기를 대기
 
         // ── 액션 완료 후 높이 다시 측정 및 뷰포트 최종 확장 ────────────────
         await page.evaluate(async () => {
@@ -90,17 +98,6 @@ app.post('/api/screenshot', async (req, res) => {
         });
 
         const finalHeight = await page.evaluate(() => {
-            const targetTags = new Set(['DIV', 'MAIN', 'SECTION', 'ARTICLE', 'BODY', 'HTML', 'ASIDE', 'NAV']);
-            const els = document.querySelectorAll('*');
-            for (const el of els) {
-                if (!targetTags.has(el.tagName)) continue;
-                const s = window.getComputedStyle(el);
-                if (el.scrollHeight > el.clientHeight || ['auto', 'scroll', 'hidden', 'clip'].includes(s.overflowY) || el.tagName === 'BODY' || el.tagName === 'HTML' || el.tagName === 'MAIN') {
-                    el.style.setProperty('height', 'auto', 'important');
-                    el.style.setProperty('max-height', 'none', 'important');
-                    el.style.setProperty('overflow-y', 'visible', 'important');
-                }
-            }
             return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
         });
 
@@ -209,6 +206,9 @@ app.post('/api/screenshot', async (req, res) => {
 
                 const rect = node.getBoundingClientRect();
                 if (rect.width < 0.5 || rect.height < 0.5) return null;
+                if (style.clip === 'rect(0px, 0px, 0px, 0px)' || style.clipPath === 'inset(100%)') return null;
+                // 완전히 문서/뷰포트 밖을 벗어나는 요소들 (sr-only, 라이브서버 배지 등) 제거
+                if (rect.bottom < -50 || rect.right < -50 || rect.top > window.innerHeight + 100 || rect.left > window.innerWidth + 100) return null;
 
                 const myRect = { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
                 const captureAsImage = shouldCaptureAsImage(node, style);
@@ -409,6 +409,7 @@ app.post('/api/screenshot-image', async (req, res) => {
 
         if (url) await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
         else if (html) await page.setContent(html, { waitUntil: 'networkidle2', timeout: 30000 });
+        await new Promise(r => setTimeout(r, 4000)); // 애니메이션 및 그래프 렌더링 대기
 
         // 액션 수행 (클릭/호버)
         const combinedActions = [];
@@ -418,12 +419,24 @@ app.post('/api/screenshot-image', async (req, res) => {
         for (const action of combinedActions) {
             try {
                 await page.waitForSelector(action.selector, { timeout: 3000 });
-                if (action.type === 'click') { await page.click(action.selector); await new Promise(r => setTimeout(r, 600)); }
-                else if (action.type === 'hover') { await page.hover(action.selector); await new Promise(r => setTimeout(r, 600)); }
+                if (action.type === 'click') {
+                    await page.evaluate((sel) => {
+                        const el = document.querySelector(sel);
+                        if (el) {
+                            el.scrollIntoView({ block: 'center', inline: 'center' });
+                            el.click();
+                        }
+                    }, action.selector);
+                    await new Promise(r => setTimeout(r, 600));
+                } else if (action.type === 'hover') {
+                    await page.hover(action.selector);
+                    await new Promise(r => setTimeout(r, 600));
+                }
             } catch (e) {
                 console.warn(`[액션 실패] ${action.type}: ${action.selector}`);
             }
         }
+        await new Promise(r => setTimeout(r, 3000)); // 액션이 모두 끝나고 레이아웃/앱 데이터가 완전히 로딩되기를 대기
 
         // 높이 측정 및 확장 (액션 완료 후 최종 측정)
         await page.evaluate(async () => {
@@ -434,19 +447,7 @@ app.post('/api/screenshot-image', async (req, res) => {
             window.scrollTo(0, 0);
         });
         const finalHeight = await page.evaluate(() => {
-            const targetTags = new Set(['DIV', 'MAIN', 'SECTION', 'ARTICLE', 'BODY', 'HTML', 'ASIDE', 'NAV']);
-            let max = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-            document.querySelectorAll('*').forEach(el => {
-                if (!targetTags.has(el.tagName)) return;
-                const s = window.getComputedStyle(el);
-                if (el.scrollHeight > el.clientHeight || ['auto', 'scroll', 'hidden', 'clip'].includes(s.overflowY) || el.tagName === 'BODY' || el.tagName === 'HTML' || el.tagName === 'MAIN') {
-                    el.style.setProperty('height', 'auto', 'important');
-                    el.style.setProperty('max-height', 'none', 'important');
-                    el.style.setProperty('overflow-y', 'visible', 'important');
-                }
-                if (el.scrollHeight > max) max = el.scrollHeight;
-            });
-            return max;
+            return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
         });
         if (finalHeight > height) {
             height = finalHeight;

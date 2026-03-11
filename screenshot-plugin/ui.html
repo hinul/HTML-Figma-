@@ -976,8 +976,8 @@
       minimizeForCapture(); // ← 플러그인 축소
 
       var payload = {
-        mode: m === 'file' ? 'html' : m,
-        value: value,
+        url: m === 'url' ? value : null,
+        html: m !== 'url' ? value : null,
         clickSelectors: selectors,
         viewport: { width: _viewportWidth, height: 1080 },
         showHidden: document.getElementById('show-hidden').checked
@@ -1362,9 +1362,15 @@
 
       minimizeForCapture();
 
+      var selectors = [];
+      document.querySelectorAll('#selector-list input').forEach(function (inp) {
+        if (inp.value.trim()) selectors.push(inp.value.trim());
+      });
+
       var payload = {
-        mode: m === 'file' ? 'html' : m,
-        value: value,
+        url: m === 'url' ? value : null,
+        html: m !== 'url' ? value : null,
+        clickSelectors: selectors,
         actions: _recordedActions,
         viewport: { width: _viewportWidth, height: 1080 },
         showHidden: document.getElementById('show-hidden').checked
